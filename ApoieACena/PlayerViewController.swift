@@ -11,33 +11,44 @@ import AVFoundation
 
 class PlayerViewController: UIViewController {
     
+    @IBOutlet weak var time: UIProgressView?
     var player:AVAudioPlayer = AVAudioPlayer()
+    weak var timerRunning: Timer?
     
     @IBAction func pause(_ sender: Any) {
         player.pause()
+        timerRunning?.invalidate()
+        timerRunning = nil
     }
     
     @IBAction func play(_ sender: Any) {
         player.play()
-//        while (player.play()){
-//            self.timeprogress = Float(self.player.currentTime)
-//            Time?.progress = Float(self.player.duration) / self.timeprogress
-//        }
+        
+        timerRunning = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { (theTimer) in
+            let timeprogress = Float(self.player.currentTime)
+            self.time?.progress = timeprogress / Float(self.player.duration)
+        }
     }
     
     @IBAction func stop(_ sender: Any) {
         player.pause()
         player.currentTime = 0
+        timerRunning?.invalidate()
+        timerRunning = nil
     }
     
-    @IBOutlet weak var Time: UIProgressView?
+    
   //  var timeprogress : Float = 0.0
     
+    func updateProgressBar() {
+        let timeprogress = Float(self.player.currentTime)
+        time?.progress = Float(self.player.duration) / timeprogress
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.Time?.progress = 0.0
+        self.time?.progress = 0.0
         do{
             let audioPath = Bundle.main.path(forResource: "Fim", ofType: "wav")
             try player = AVAudioPlayer(contentsOf: NSURL(fileURLWithPath: audioPath!) as URL )

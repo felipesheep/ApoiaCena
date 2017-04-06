@@ -1,136 +1,144 @@
 //
-//  SearchViewController.swift
+//  SearchTableViewController.swift
 //  ApoieACena
 //
-//  Created by Felipe Montenegro on 3/31/17.
+//  Created by Felipe Montenegro on 4/5/17.
 //  Copyright © 2017 Felipe Montenegro. All rights reserved.
 //
 
 import UIKit
 
-class SearchViewController: UIViewController,
-UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate, UISearchDisplayDelegate {
-
-    @IBOutlet weak var tableView: UITableView!
+class SearchTableViewController: UITableViewController, UISearchBarDelegate {
     
-    var friendsArray = [FriendItem]()
-    var filteredFriends = [FriendItem]()
+    let searchBar = UISearchBar()
+    let tableData = ["Acre (AC)","Alagoas (AL)","Amapá (AP)","Amazonas (AM)","Bahia (BA)","Ceará (CE)","Distrito Federal (DF)","Espírito Santo (ES)","Goiás (GO)","Maranhão (MA)","Mato Grosso (MT)","Mato Grosso do Sul (MS)","Minas Gerais (MG)","Pará (PA)","Paraíba (PB)","Paraná (PR)","Pernambuco (PE)","Piauí (PI)","Rio de Janeiro (RJ)","Rio Grande do Norte (RN)","Rio Grande do Sul (RS)","Rondônia (RO)","Roraima (RR)","Santa Catarina (SC)","São Paulo (SP)","Sergipe (SE)","Tocantins (TO)"]
+    var filteredArray = [String]()
+    var shouldShowSearchResults = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        createSearchBar()
         
-        self.filteredFriends += [FriendItem(name: "Acre (AC)")]
-        self.filteredFriends += [FriendItem(name: "Alagoas (AL)")]
-        self.filteredFriends += [FriendItem(name: "Amapá (AP)")]
-        self.filteredFriends += [FriendItem(name: "Amazonas (AM)")]
-        self.filteredFriends += [FriendItem(name: "Bahia (BA)")]
-        self.filteredFriends += [FriendItem(name: "Ceará (CE)")]
-        self.filteredFriends += [FriendItem(name: "Distrito Federal (DF)")]
-        self.filteredFriends += [FriendItem(name: "Espírito Santo (ES)")]
-        self.filteredFriends += [FriendItem(name: "Goiás (GO)")]
-        self.filteredFriends += [FriendItem(name: "Maranhão (MA)")]
-        self.filteredFriends += [FriendItem(name: "Mato Grosso (MT)")]
-        self.filteredFriends += [FriendItem(name: "Mato Grosso do Sul (MS)")]
-        self.filteredFriends += [FriendItem(name: "Minas Gerais (MG)")]
-        self.filteredFriends += [FriendItem(name: "Pará (PA)")]
-        self.filteredFriends += [FriendItem(name: "Paraíba (PB)")]
-        self.filteredFriends += [FriendItem(name: "Paraná (PR)")]
-        self.filteredFriends += [FriendItem(name: "Pernambuco (PE)")]
-        self.filteredFriends += [FriendItem(name: "Piauí (PI)")]
-        self.filteredFriends += [FriendItem(name: "Rio de Janeiro (RJ)")]
-        self.filteredFriends += [FriendItem(name: "Rio Grande do Norte (RN)")]
-        self.filteredFriends += [FriendItem(name: "Rio Grande do Sul (RS)")]
-        self.filteredFriends += [FriendItem(name: "Rondônia (RO)")]
-        self.filteredFriends += [FriendItem(name: "Roraima (RR)")]
-        self.filteredFriends += [FriendItem(name: "Santa Catarina (SC)")]
-        self.filteredFriends += [FriendItem(name: "São Paulo (SP)")]
-        self.filteredFriends += [FriendItem(name: "Sergipe (SE)")]
-        self.filteredFriends += [FriendItem(name: "Tocantins (TO)")]
         
-        self.tableView.reloadData()
-
-        // Do any additional setup after loading the view.
+        // Uncomment the following line to preserve selection between presentations
+        // self.clearsSelectionOnViewWillAppear = false
+        
+        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
+        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
     
-    func numberOfSections(in tableView: UITableView) -> Int {
+    // MARK: - Table view data source
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        filteredArray = tableData.filter({ (names: String) -> Bool in
+            return names.lowercased().range(of: searchText.lowercased()) != nil
+        })
+        
+        if(searchText != "") {
+            shouldShowSearchResults = true
+            self.tableView.reloadData()
+        }
+        else {
+            shouldShowSearchResults = false
+            self.tableView.reloadData()
+        }
+    }
+    
+    func createSearchBar() {
+        
+        searchBar.showsCancelButton = false
+        searchBar.placeholder = "Search for Regions"
+        searchBar.delegate = self
+        
+        self.navigationItem.titleView = searchBar
+    }
+    
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        // #warning Incomplete implementation, return the number of sections
         return 1
     }
     
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if(tableView == self.searchDisplayController?.searchResultsTableView) {
-            return self.filteredFriends.count
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if (shouldShowSearchResults) {
+            return filteredArray.count
         }
         else {
-            return self.friendsArray.count
+            return tableData.count
         }
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = self.tableView.dequeueReusableCell(withIdentifier: "cell")! as UITableViewCell
-        
-        var friend : FriendItem
-        if(tableView == self.searchDisplayController?.searchResultsTableView) {
-            friend = self.filteredFriends[indexPath.row]
-        }
-        else {
-            friend = self.friendsArray[indexPath.row]
-        }
-        
-        cell.textLabel?.text = friend.name
-        
-        return cell
-    }
     
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "basicCell", for: indexPath)
         
-        var friend : FriendItem
-        
-        if(tableView == self.searchDisplayController?.searchResultsTableView) {
-            friend = self.filteredFriends[indexPath.row]
+        if(shouldShowSearchResults) {
+            cell.textLabel?.text = filteredArray[indexPath.row]
+            return cell
         }
         else {
-            friend = self.friendsArray[indexPath.row]
+            cell.textLabel?.text = tableData[indexPath.row]
+            return cell
         }
-        
-        print(friend.name)
-        
     }
     
-    func filterContentForSearchText(searchText: String, scope: String = "Title") {
-        self.filteredFriends = self.friendsArray.filter({(friend : FriendItem) -> Bool in
-            var categoryMatch = (scope == "Title")
-            var stringMatch = friend.name.range(of: searchText)
-            
-            return categoryMatch && (stringMatch != nil)
-        })
+    override func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        searchBar.endEditing(true)
     }
     
-    func searchDisplayController(_ controller: UISearchDisplayController, shouldReloadTableForSearch searchString: String?) -> Bool {
-        self.filterContentForSearchText(searchText: searchString!, scope: "Title")
-        
-        return true
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        shouldShowSearchResults = true
+        searchBar.endEditing(true)
+        self.tableView.reloadData()
     }
     
-    func searchDisplayController(_ controller: UISearchDisplayController, shouldReloadTableForSearchScope searchOption: Int) -> Bool {
-        self.filterContentForSearchText(searchText: (self.searchDisplayController!.searchBar.text)!, scope: "Title")
-        return true
-    }
-    
-
     /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
+     // Override to support conditional editing of the table view.
+     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+     // Return false if you do not want the specified item to be editable.
+     return true
+     }
+     */
+    
+    /*
+     // Override to support editing the table view.
+     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+     if editingStyle == .delete {
+     // Delete the row from the data source
+     tableView.deleteRows(at: [indexPath], with: .fade)
+     } else if editingStyle == .insert {
+     // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
+     }
+     }
+     */
+    
+    /*
+     // Override to support rearranging the table view.
+     override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
+     
+     }
+     */
+    
+    /*
+     // Override to support conditional rearranging of the table view.
+     override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
+     // Return false if you do not want the item to be re-orderable.
+     return true
+     }
+     */
+    
+    /*
+     // MARK: - Navigation
+     
+     // In a storyboard-based application, you will often want to do a little preparation before navigation
+     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+     // Get the new view controller using segue.destinationViewController.
+     // Pass the selected object to the new view controller.
+     }
+     */
+    
 }
